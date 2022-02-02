@@ -86,6 +86,7 @@ namespace MyBookDatabase
                             $"{ConvertOperationJan(OperationJan.help)  } : help\n" +
                             $"{ConvertOperationJan(OperationJan.scan)  } : scan\n" +
                             $"{ConvertOperationJan(OperationJan.insert)} : insert\n" +
+                            $"{ConvertOperationJan(OperationJan.check) } : check\n" +
                             $"{ConvertOperationJan(OperationJan.list)  } : list\n" +
                             $"{ConvertOperationJan(OperationJan.count) } : count\n" +
                             $"{ConvertOperationJan(OperationJan.save)  } : save\n" +
@@ -98,6 +99,10 @@ namespace MyBookDatabase
                     case "insert":
                     case OperationJan.insert:
                         Mode = ConsoleMode.Insert;
+                        continue;
+                    case "check":
+                    case OperationJan.check:
+                        Mode = ConsoleMode.Check;
                         continue;
                     case "list":
                     case OperationJan.list:
@@ -172,6 +177,9 @@ namespace MyBookDatabase
                             continue;
                         }
                         break;
+                    case ConsoleMode.Check:
+                        Console.WriteLine("\n" + ndlsApi.GetDataString(readText));
+                        break;
                 }
 
                 Beep.Normal();
@@ -204,6 +212,7 @@ namespace MyBookDatabase
         {
             Scan,
             Insert,
+            Check
         }
 
         private static class OperationJan
@@ -214,6 +223,7 @@ namespace MyBookDatabase
             public const string help   = "2022020100018";
             public const string scan   = "2022020100025";
             public const string insert = "2022020100032";
+            public const string check  = "2022020100087";
             public const string list   = "2022020100049";
             public const string count  = "2022020100056";
             public const string save   = "2022020100063";

@@ -3,17 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
 
 namespace MyBookDatabase
 {
     public class NationalDietLibrarySearchAPI
     {
+        private HttpClient httpClient;
         private XmlDocument xmlDocument;
         private XmlNamespaceManager xmlNsManager;
 
         public NationalDietLibrarySearchAPI()
         {
+            httpClient = new();
             xmlDocument = new();
             xmlNsManager = new(xmlDocument.NameTable);
 
@@ -27,7 +30,13 @@ namespace MyBookDatabase
             xmlNsManager.AddNamespace("owl", "http://www.w3.org/2002/07/owl#");
         }
 
-        private string ApiUri(long ISBN) => $"https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&version=1.2&recordSchema=dcndl&onlyBib=true&recordPacking=xml&query=isbn=\"{ISBN}\" AND dpid=iss-ndl-opac";
+        public static string ApiUri(long ISBN) => $"https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&version=1.2&recordSchema=dcndl&onlyBib=true&recordPacking=xml&query=isbn=\"{ISBN}\" AND dpid=iss-ndl-opac";
+
+        public string? GetDataString(string ISBN)
+        {
+            if (!long.TryParse(ISBN, out long isbm) || ISBN.Length != 13) return null;
+            return HttpUtility.HtmlDecode(httpClient.GetStringAsync(ApiUri(isbm)).Result);
+        }
 
         public BookDataFormat? GetData(string ISBN)
         {
