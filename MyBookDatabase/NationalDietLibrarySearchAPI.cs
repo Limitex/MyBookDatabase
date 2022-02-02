@@ -35,7 +35,7 @@ namespace MyBookDatabase
         public string? GetDataString(string ISBN)
         {
             if (!long.TryParse(ISBN, out long isbm) || ISBN.Length != 13) return null;
-            return HttpUtility.HtmlDecode(httpClient.GetStringAsync(ApiUri(isbm)).Result);
+            return HttpUtility.HtmlDecode(httpClient.GetStringAsync(ApiUri(isbm)).Result).TrimEnd('\n');
         }
 
         public BookDataFormat? GetData(string ISBN)
