@@ -43,8 +43,11 @@ namespace MyBookDatabase
                 "/root:searchRetrieveResponse/root:records/root:record" +
                 "/root:recordData/rdf:RDF/dcndl:BibResource", xmlNsManager);
 
-            var r_ISBN = recordData?.SelectNodes("dcterms:identifier", xmlNsManager)?.Where(p =>
-                p.SelectSingleNode("@rdf:datatype", xmlNsManager)?.InnerText.Contains("ISBN") ?? false).First().InnerText;
+            nodeBuffer = recordData?.SelectNodes("dcterms:identifier", xmlNsManager)?.Where(p =>
+                p.SelectSingleNode("@rdf:datatype", xmlNsManager)?.InnerText.Contains("ISBN") ?? false).First();
+            if (nodeBuffer == null) return null;
+            if (!long.TryParse(nodeBuffer.InnerText.Replace("-", ""), out long r_ISBN_ID)) return null;
+            var r_ISBN = nodeBuffer.InnerText;
 
             var r_Title = recordData?.SelectSingleNode("dcterms:title", xmlNsManager)?.InnerText;
 
@@ -91,6 +94,7 @@ namespace MyBookDatabase
 
             return new BookDataFormat()
             {
+                ISBN_ID = r_ISBN_ID,
                 ISBN = r_ISBN,
                 Title = r_Title,
                 Title_Meta = r_dc_Title,
@@ -114,6 +118,7 @@ namespace MyBookDatabase
         public static void Show(BookDataFormat? boolData)
         {
             if (boolData == null) return;
+            Console.WriteLine("ISBN ID              : " + boolData?.ISBN_ID);
             Console.WriteLine("ISBN                 : " + boolData?.ISBN);
             Console.WriteLine("Title                : " + boolData?.Title ?? "NULL");
             Console.WriteLine("Title (Meta)         : " + boolData?.Title_Meta ?? "NULL");
@@ -136,7 +141,8 @@ namespace MyBookDatabase
 
     public struct BookDataFormat
     {
-        public string? ISBN;
+        public long ISBN_ID;
+        public string ISBN;
         public string? Title;
         public string? Title_Meta;
         public string? Title_Trans_Meta;
