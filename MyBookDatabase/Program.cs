@@ -129,7 +129,7 @@ namespace MyBookDatabase
                             Console.WriteLine("The entered string is not ISBN.");
                             continue;
                         }
-                        var deleteIndex = BookDataList.Select(p => p.ISBN.Replace("-","")).ToList().IndexOf(read);
+                        var deleteIndex = BookDataList.Select(p => p.ISBN_ID).ToList().IndexOf(isbm);
                         if (deleteIndex == -1)
                         {
                             Console.WriteLine("This ISBN was not found from List.");
@@ -159,7 +159,7 @@ namespace MyBookDatabase
                         NationalDietLibrarySearchAPI.Show(bookData);
                         break;
                     case ConsoleMode.Insert:
-                        if (!BookDataList.Select(p => p.ISBN).Contains(bookData.ISBN))
+                        if (!BookDataList.Select(p => p.ISBN_ID).Contains(bookData.ISBN_ID))
                         {
                             BookDataList.Add(bookData);
                             NationalDietLibrarySearchAPI.Show(bookData);
