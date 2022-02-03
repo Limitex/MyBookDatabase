@@ -88,6 +88,7 @@ namespace MyBookDatabase
                             $"{ConvertOperationJan(OperationJan.insert)} : insert\n" +
                             $"{ConvertOperationJan(OperationJan.check) } : check\n" +
                             $"{ConvertOperationJan(OperationJan.list)  } : list\n" +
+                            $"{ConvertOperationJan(OperationJan.sort)  } : sort\n" +
                             $"{ConvertOperationJan(OperationJan.count) } : count\n" +
                             $"{ConvertOperationJan(OperationJan.save)  } : save\n" +
                             $"{ConvertOperationJan(OperationJan.remove)} : remove\n");
@@ -107,6 +108,10 @@ namespace MyBookDatabase
                     case "list":
                     case OperationJan.list:
                         foreach (var data in BookDataList) Console.WriteLine($"ISBN : {data.ISBN}");
+                        continue;
+                    case "sort":
+                    case OperationJan.sort:
+                        // ----
                         continue;
                     case "count":
                     case OperationJan.count:
@@ -225,9 +230,11 @@ namespace MyBookDatabase
             public const string insert = "2022020100032";
             public const string check  = "2022020100087";
             public const string list   = "2022020100049";
+            public const string sort   = "2022020100094";
             public const string count  = "2022020100056";
             public const string save   = "2022020100063";
             public const string remove = "2022020100070";
+
         }
     }
 }
