@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MyBookDatabase
 {
@@ -107,11 +108,26 @@ namespace MyBookDatabase
                         continue;
                     case "list":
                     case OperationJan.list:
-                        foreach (var data in BookDataList) Console.WriteLine($"ISBN : {data.ISBN}");
+                        foreach (var data in BookDataList)
+                            Console.WriteLine(
+                                $"{data.ISBN} => " +
+                                $"{data.Title} => " +
+                                $"{string.Join(" / ", data.Publishers ?? new string[0])} => " +
+                                $"{string.Join(" / ", data.Series_Title)} => " +
+                                $"{string.Join(" / ", data.Creators ?? new string[0])}");
                         continue;
                     case "sort":
                     case OperationJan.sort:
-                        // ----
+                        var sortData = BookDataList.OrderBy(p => p.Publishers_Trans?.FirstOrDefault());
+                        sortData = sortData.ThenBy(p => p.Series_Title_Trans?.FirstOrDefault());
+                        sortData = sortData.ThenBy(p => p.Creators_Trans?.FirstOrDefault());
+                        sortData = sortData.ThenBy(p => p.Title_Trans_Meta);
+                        sortData = sortData.ThenBy(p => int.Parse(Regex.Replace(p.Volume_Trans ?? "0", @"[^0-9]", "")));
+                        if (Judgmenter("Do you want the sort to be reflected in the list? It will not be saved.") ?? false)
+                        {
+                            BookDataList = sortData.ToList();
+                            Console.WriteLine("Done.");
+                        }
                         continue;
                     case "count":
                     case OperationJan.count:
