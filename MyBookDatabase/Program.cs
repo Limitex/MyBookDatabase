@@ -118,16 +118,7 @@ namespace MyBookDatabase
                         continue;
                     case "sort":
                     case OperationJan.sort:
-                        var sortData = BookDataList.OrderBy(p => p.Publishers_Trans?.FirstOrDefault());
-                        sortData = sortData.ThenBy(p => p.Series_Title_Trans?.FirstOrDefault());
-                        sortData = sortData.ThenBy(p => p.Creators_Trans?.FirstOrDefault());
-                        sortData = sortData.ThenBy(p => p.Title_Trans_Meta);
-                        sortData = sortData.ThenBy(p => int.Parse(Regex.Replace(p.Volume_Trans ?? "0", @"[^0-9]", "")));
-                        if (Judgmenter("Do you want the sort to be reflected in the list? It will not be saved.") ?? false)
-                        {
-                            BookDataList = sortData.ToList();
-                            Console.WriteLine("Done.");
-                        }
+                        Sort();
                         continue;
                     case "count":
                     case OperationJan.count:
@@ -208,6 +199,55 @@ namespace MyBookDatabase
             }
         }
 
+        private static void Sort()
+        {
+            var TitleGroup = BookDataList.GroupBy(p => Regex.Replace(p.Title_Trans_Meta ?? string.Empty, @"\s", string.Empty)).OrderBy(p => p.Key);
+            var seriesCount = TitleGroup.Count();
+            var bookGroup = new List<BookGroupFormat>();
+            foreach (var item in TitleGroup)
+            {
+                var title = item.Key;
+                var publisher = MostValue(item, p => p.Publishers_Trans?.FirstOrDefault());
+                var series = MostValue(item, p => p.Series_Title_Trans);
+                var creator = MostValue(item, p => p.Creators_Trans?.FirstOrDefault());
+                var bookCount = item.Count();
+                var bookData = new List<BookDataFormat>();
+                foreach (var book in item) bookData.Add(book);
+                bookGroup.Add(new BookGroupFormat()
+                {
+                    Publisher = publisher,
+                    Series = series,
+                    Creator = creator,
+                    Title = title,
+                    Books = bookData.ToArray()
+                });
+            }
+
+            var bookSortData = new List<BookDataFormat>();
+            var sort = bookGroup.OrderBy(p => p.Publisher).ThenBy(p => p.Series).ThenBy(p => p.Creator);
+            foreach (var book in sort)
+                bookSortData.AddRange(book.Books.OrderBy(p => int.Parse(Regex.Replace(p.Volume_Trans ?? "0", @"[^0-9]", ""))));
+            
+            if (Judgmenter("Do you want the sort to be reflected in the list? It will not be saved.") ?? false)
+            {
+                BookDataList = bookSortData;
+                Console.WriteLine("Done.");
+            }
+        }
+
+        private static string MostValue(IGrouping<string, BookDataFormat> group, Func<BookDataFormat, string?> func)
+        {
+            var count = new Dictionary<string, int>();
+            foreach (var item in group)
+            {
+                var data = func(item);
+                if (data == null) continue;
+                if (!count.ContainsKey(data)) count.Add(data, 1);
+                else count[data]++;
+            }
+            return count.OrderByDescending(p => p.Value).FirstOrDefault().Key;
+        }
+
         private static bool? Judgmenter(string text)
         {
             Console.Write($"{text}(y/n) or (ok/cansel)\n>>");
@@ -228,6 +268,15 @@ namespace MyBookDatabase
 
         private static string ConvertOperationJan(string operationJan) =>
                 operationJan.Insert(8, "-").Insert(13, "-");
+
+        public struct BookGroupFormat
+        {
+            public string? Publisher;
+            public string? Series;
+            public string? Creator;
+            public string? Title;
+            public BookDataFormat[] Books;
+        }
 
         enum ConsoleMode
         {
