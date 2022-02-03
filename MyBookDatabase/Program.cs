@@ -202,32 +202,33 @@ namespace MyBookDatabase
         private static void Sort()
         {
             var TitleGroup = BookDataList.GroupBy(p => Regex.Replace(p.Title_Trans_Meta ?? string.Empty, @"\s", string.Empty)).OrderBy(p => p.Key);
-            var seriesCount = TitleGroup.Count();
             var bookGroup = new List<BookGroupFormat>();
-            foreach (var item in TitleGroup)
+            foreach (var group in TitleGroup)
             {
-                var title = item.Key;
-                var publisher = MostValue(item, p => p.Publishers_Trans?.FirstOrDefault());
-                var series = MostValue(item, p => p.Series_Title_Trans);
-                var creator = MostValue(item, p => p.Creators_Trans?.FirstOrDefault());
-                var bookCount = item.Count();
-                var bookData = new List<BookDataFormat>();
-                foreach (var book in item) bookData.Add(book);
+                var title = group.Key;
+                var publisher = MostValue(group, p => p.Publishers_Trans?.FirstOrDefault());
+                var series = MostValue(group, p => p.Series_Title_Trans);
+                var creator = MostValue(group, p => p.Creators_Trans?.FirstOrDefault());
+                var bookData = group.ToArray();
                 bookGroup.Add(new BookGroupFormat()
                 {
                     Publisher = publisher,
                     Series = series,
                     Creator = creator,
                     Title = title,
-                    Books = bookData.ToArray()
+                    Books = bookData
                 });
             }
 
             var bookSortData = new List<BookDataFormat>();
-            var sort = bookGroup.OrderBy(p => p.Publisher).ThenBy(p => p.Series).ThenBy(p => p.Creator);
-            foreach (var book in sort)
-                bookSortData.AddRange(book.Books.OrderBy(p => int.Parse(Regex.Replace(p.Volume_Trans ?? "0", @"[^0-9]", ""))));
-            
+            var tempSortData = bookGroup.OrderBy(p => p.Publisher).ThenBy(p => p.Series).ThenBy(p => p.Creator);
+            foreach (var books in tempSortData)
+                bookSortData.AddRange(books.Books.OrderBy(p => int.Parse(Regex.Replace(p.Volume_Trans ?? "0", @"[^0-9]", ""))));
+
+            Console.WriteLine("\nAll database information");
+            Console.WriteLine($"Total Book Title Count : {TitleGroup.Count()}");
+            Console.WriteLine($"Total Book Count       : {bookSortData.Count()}\n");
+
             if (Judgmenter("Do you want the sort to be reflected in the list? It will not be saved.") ?? false)
             {
                 BookDataList = bookSortData;
